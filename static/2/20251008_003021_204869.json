@@ -1,0 +1,67 @@
+{
+  "timestamp_utc": "2025-10-08T00:30:21.204869",
+  "camera_id": 2,
+  "camera_name": "stream_croacia",
+  "image_path": "2/20251008_003021_204869.jpg",
+  "objects": [
+    {
+      "class_id": 0,
+      "class_name": "person",
+      "confidence": 0.7208629250526428,
+      "bbox": [
+        1487,
+        775,
+        1534,
+        937
+      ],
+      "appearance": {
+        "upper_body": {
+          "bbox": [
+            1487,
+            775,
+            1534,
+            856
+          ],
+          "dominant_color_hex": "#565158"
+        },
+        "lower_body": {
+          "bbox": [
+            1487,
+            856,
+            1534,
+            937
+          ],
+          "dominant_color_hex": "#81787b"
+        }
+      }
+    },
+    {
+      "class_id": 2,
+      "class_name": "car",
+      "confidence": 0.6470850706100464,
+      "bbox": [
+        469,
+        904,
+        1021,
+        1073
+      ],
+      "dominant_color_hex": "#71696d"
+    },
+    {
+      "class_id": 2,
+      "class_name": "car",
+      "confidence": 0.6334788799285889,
+      "bbox": [
+        60,
+        740,
+        159,
+        824
+      ],
+      "dominant_color_hex": "#977b82"
+    }
+  ],
+  "objects_count": {
+    "person": 1,
+    "car": 2
+  }
+}

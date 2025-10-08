@@ -1,0 +1,110 @@
+{
+  "timestamp_utc": "2025-10-08T00:32:37.384787",
+  "camera_id": 2,
+  "camera_name": "stream_croacia",
+  "image_path": "2/20251008_003237_384787.jpg",
+  "objects": [
+    {
+      "class_id": 2,
+      "class_name": "car",
+      "confidence": 0.7640652060508728,
+      "bbox": [
+        458,
+        754,
+        920,
+        963
+      ],
+      "dominant_color_hex": "#60585f"
+    },
+    {
+      "class_id": 0,
+      "class_name": "person",
+      "confidence": 0.6247061491012573,
+      "bbox": [
+        1588,
+        669,
+        1631,
+        792
+      ],
+      "appearance": {
+        "upper_body": {
+          "bbox": [
+            1588,
+            669,
+            1631,
+            730
+          ],
+          "dominant_color_hex": "#68585b"
+        },
+        "lower_body": {
+          "bbox": [
+            1588,
+            730,
+            1631,
+            792
+          ],
+          "dominant_color_hex": "#7a7077"
+        }
+      }
+    },
+    {
+      "class_id": 0,
+      "class_name": "person",
+      "confidence": 0.5749137997627258,
+      "bbox": [
+        1361,
+        717,
+        1415,
+        859
+      ],
+      "appearance": {
+        "upper_body": {
+          "bbox": [
+            1361,
+            717,
+            1415,
+            788
+          ],
+          "dominant_color_hex": "#4a4750"
+        },
+        "lower_body": {
+          "bbox": [
+            1361,
+            788,
+            1415,
+            859
+          ],
+          "dominant_color_hex": "#575359"
+        }
+      }
+    },
+    {
+      "class_id": 2,
+      "class_name": "car",
+      "confidence": 0.5238761305809021,
+      "bbox": [
+        62,
+        743,
+        160,
+        825
+      ],
+      "dominant_color_hex": "#987b83"
+    },
+    {
+      "class_id": 2,
+      "class_name": "car",
+      "confidence": 0.2780758738517761,
+      "bbox": [
+        1074,
+        711,
+        1215,
+        768
+      ],
+      "dominant_color_hex": "#4f4a53"
+    }
+  ],
+  "objects_count": {
+    "car": 3,
+    "person": 2
+  }
+}

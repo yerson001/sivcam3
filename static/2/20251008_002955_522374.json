@@ -1,0 +1,153 @@
+{
+  "timestamp_utc": "2025-10-08T00:29:55.522374",
+  "camera_id": 2,
+  "camera_name": "stream_croacia",
+  "image_path": "2/20251008_002955_522374.jpg",
+  "objects": [
+    {
+      "class_id": 2,
+      "class_name": "car",
+      "confidence": 0.7657224535942078,
+      "bbox": [
+        231,
+        712,
+        463,
+        883
+      ],
+      "dominant_color_hex": "#5e555c"
+    },
+    {
+      "class_id": 0,
+      "class_name": "person",
+      "confidence": 0.6656981110572815,
+      "bbox": [
+        555,
+        802,
+        603,
+        916
+      ],
+      "appearance": {
+        "upper_body": {
+          "bbox": [
+            555,
+            802,
+            603,
+            859
+          ],
+          "dominant_color_hex": "#776b6b"
+        },
+        "lower_body": {
+          "bbox": [
+            555,
+            859,
+            603,
+            916
+          ],
+          "dominant_color_hex": "#58505a"
+        }
+      }
+    },
+    {
+      "class_id": 2,
+      "class_name": "car",
+      "confidence": 0.587130069732666,
+      "bbox": [
+        60,
+        740,
+        161,
+        824
+      ],
+      "dominant_color_hex": "#977a82"
+    },
+    {
+      "class_id": 2,
+      "class_name": "car",
+      "confidence": 0.5861291885375977,
+      "bbox": [
+        469,
+        901,
+        1021,
+        1075
+      ],
+      "dominant_color_hex": "#716a6d"
+    },
+    {
+      "class_id": 0,
+      "class_name": "person",
+      "confidence": 0.4959535598754883,
+      "bbox": [
+        490,
+        824,
+        548,
+        929
+      ],
+      "appearance": {
+        "upper_body": {
+          "bbox": [
+            490,
+            824,
+            548,
+            876
+          ],
+          "dominant_color_hex": "#776869"
+        },
+        "lower_body": {
+          "bbox": [
+            490,
+            876,
+            548,
+            929
+          ],
+          "dominant_color_hex": "#b2b8c4"
+        }
+      }
+    },
+    {
+      "class_id": 0,
+      "class_name": "person",
+      "confidence": 0.3775191307067871,
+      "bbox": [
+        432,
+        894,
+        478,
+        1003
+      ],
+      "appearance": {
+        "upper_body": {
+          "bbox": [
+            432,
+            894,
+            478,
+            948
+          ],
+          "dominant_color_hex": "#87696a"
+        },
+        "lower_body": {
+          "bbox": [
+            432,
+            948,
+            478,
+            1003
+          ],
+          "dominant_color_hex": "#a38e8f"
+        }
+      }
+    },
+    {
+      "class_id": 2,
+      "class_name": "car",
+      "confidence": 0.2930617332458496,
+      "bbox": [
+        1072,
+        706,
+        1218,
+        767
+      ],
+      "dominant_color_hex": "#4d4851"
+    }
+  ],
+  "objects_count": {
+    "car": 4,
+    "person": 3
+  }
+}

@@ -1,0 +1,42 @@
+{
+  "timestamp_utc": "2025-10-08T00:27:03.165820",
+  "camera_id": 1,
+  "camera_name": "camara_local",
+  "image_path": "1/20251008_002703_165820.jpg",
+  "objects": [
+    {
+      "class_id": 0,
+      "class_name": "person",
+      "confidence": 0.36475884914398193,
+      "bbox": [
+        3,
+        117,
+        463,
+        434
+      ],
+      "appearance": {
+        "upper_body": {
+          "bbox": [
+            3,
+            117,
+            463,
+            275
+          ],
+          "dominant_color_hex": "#2c2731"
+        },
+        "lower_body": {
+          "bbox": [
+            3,
+            275,
+            463,
+            434
+          ],
+          "dominant_color_hex": "#0a0307"
+        }
+      }
+    }
+  ],
+  "objects_count": {
+    "person": 1
+  }
+}
