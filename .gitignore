@@ -1,0 +1,50 @@
+# === Entornos virtuales ===
+venv/
+.env/
+.venv/
+env/
+ENV/
+
+# === Archivos de configuración locales ===
+*.env
+*.ini
+*.cfg
+instance/
+config.yml
+
+# === Archivos y carpetas estáticas o generadas ===
+static/
+media/
+uploads/
+runs/
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+*.log
+
+# === Archivos de cache / compilación ===
+*.db
+*.sqlite3
+*.pyc
+__pycache__/
+*.so
+
+# === Archivos temporales ===
+*.tmp
+*.bak
+*.swp
+*.swo
+*.DS_Store
+Thumbs.db
+
+# === Archivos de IDEs ===
+.vscode/
+.idea/
+*.iml
+
+# === Archivos específicos de Flask ===
+instance/
+*.db
+*.sqlite
+flask_session/
