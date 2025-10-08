@@ -1,0 +1,749 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SivCam</title>
+  <style>
+    :root {
+      --sidebar-width: 220px;
+      --color-bg: #f5f6fa;
+      --color-primary: #1abc9c;
+      --color-dark: #2c3e50;
+      --color-light: #ecf0f1;
+    }
+
+    body {
+      margin: 0;
+      font-family: "Inter", Arial, sans-serif;
+      background-color: var(--color-bg);
+      display: flex;
+      height: 100vh;
+      overflow: hidden;
+    }
+
+    /* --- Sidebar --- */
+    .sidebar {
+      width: var(--sidebar-width);
+      background: var(--color-dark);
+      color: var(--color-light);
+      display: flex;
+      flex-direction: column;
+      padding: 1rem;
+      transition: width 0.3s ease;
+    }
+    .sidebar.collapsed {
+      width: 60px;
+    }
+
+    .sidebar h1 {
+      font-size: 20px;
+      text-align: center;
+      margin-bottom: 1.5rem;
+    }
+
+    .nav-list {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+    }
+
+    .nav-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 10px 14px;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+
+    .nav-item:hover {
+      background: rgba(255,255,255,0.1);
+    }
+
+    .nav-item.active {
+      background: var(--color-primary);
+    }
+
+    .nav-item svg {
+      width: 20px;
+      height: 20px;
+      fill: white;
+    }
+
+    .sidebar.collapsed .nav-item span {
+      display: none;
+    }
+
+    /* --- Main Content --- */
+    .main-content {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      padding: 1rem;
+      overflow-y: auto;
+    }
+
+    .main-header {
+      display: flex;
+      align-items: center;
+      margin-bottom: 1rem;
+    }
+
+    .sidebar-toggle {
+      background: none;
+      border: none;
+      font-size: 24px;
+      cursor: pointer;
+      color: var(--color-dark);
+    }
+
+    /* --- Grid Cameras --- */
+    #grid-container {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(400px, 1fr));
+      gap: 15px;
+    }
+
+    .video-wrapper {
+      position: relative;
+      background: #000;
+      border-radius: 10px;
+      overflow: hidden;
+      aspect-ratio: 16/9;
+      cursor: pointer;
+      transition: transform 0.2s;
+    }
+
+    .video-wrapper:hover {
+      transform: scale(1.02);
+    }
+
+    img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+
+    .camera-name {
+      position: absolute;
+      bottom: 8px;
+      left: 8px;
+      background: rgba(0, 0, 0, 0.5);
+      color: white;
+      padding: 4px 8px;
+      border-radius: 4px;
+      font-size: 13px;
+    }
+
+    .camera-id {
+      font-weight: bold;
+      color: var(--color-primary);
+      background: rgba(44, 62, 80, 0.7);
+      padding: 2px 5px;
+      border-radius: 3px;
+      margin-right: 6px;
+    }
+
+    .detected-classes-icons {
+      position: absolute;
+      top: 8px;
+      left: 8px;
+      display: flex;
+      gap: 5px;
+    }
+    .class-icon {
+      background: rgba(0, 0, 0, 0.5);
+      color: white;
+      padding: 3px 6px;
+      border-radius: 4px;
+      font-size: 12px;
+      transition: background-color 0.2s, color 0.2s;
+    }
+    .class-icon.detected {
+      background-color: var(--color-primary);
+      color: var(--color-dark);
+      font-weight: bold;
+    }
+
+    .motion-icon {
+      position: absolute;
+      bottom: 8px;
+      right: 8px;
+      background: rgba(0, 0, 0, 0.5);
+      border-radius: 50%;
+      width: 36px;
+      height: 36px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: background-color 0.2s;
+    }
+    .motion-icon.detected {
+      background-color: #e74c3c; /* Rojo */
+      animation: pulse 1.5s infinite;
+    }
+    .motion-icon svg {
+      width: 22px;
+      height: 22px;
+      fill: white;
+    }
+
+    @keyframes pulse {
+      0% {
+        transform: scale(1);
+        box-shadow: 0 0 0 0 rgba(231, 76, 60, 0.7);
+      }
+      70% {
+        transform: scale(1.05);
+        box-shadow: 0 0 0 10px rgba(231, 76, 60, 0);
+      }
+      100% {
+        transform: scale(1);
+        box-shadow: 0 0 0 0 rgba(231, 76, 60, 0);
+      }
+    }
+
+    /* --- Controles de Cámara --- */
+    .camera-controls {
+      position: absolute;
+      top: 8px;
+      right: 8px;
+      display: flex;
+      gap: 8px;
+      align-items: center;
+    }
+
+    .control-wrapper {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 2px;
+    }
+
+    .control-label {
+      font-size: 10px;
+      color: white;
+      font-weight: 500;
+      text-transform: uppercase;
+      line-height: 1;
+    }
+
+    .sensitivity-control {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      background: rgba(0, 0, 0, 0.5);
+      padding: 2px 8px;
+      border-radius: 12px;
+    }
+    .sensitivity-control input[type="range"] {
+      width: 80px;
+      cursor: pointer;
+      margin: 0;
+    }
+
+    .control-btn {
+      background: rgba(0, 0, 0, 0.5);
+      border: none;
+      color: white;
+      border-radius: 50%;
+      width: 30px;
+      height: 30px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .control-btn svg { width: 16px; height: 16px; fill: white; }
+
+    /* Switch Toggle */
+    .switch {
+      position: relative;
+      display: inline-block;
+      width: 44px;
+      height: 24px;
+    }
+    .switch input { display: none; }
+    .slider {
+      position: absolute;
+      cursor: pointer;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background-color: #ccc;
+      transition: .4s;
+      border-radius: 24px;
+    }
+    .slider:before {
+      position: absolute;
+      content: "";
+      height: 18px;
+      width: 18px;
+      left: 3px;
+      bottom: 3px;
+      background-color: white;
+      transition: .4s;
+      border-radius: 50%;
+    }
+    input:checked + .slider { background-color: var(--color-primary); }
+    input:checked + .slider:before { transform: translateX(20px); }
+
+    /* --- Single View --- */
+    #single-view {
+      display: none;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    #single-view-container {
+      position: relative;
+      width: 100%;
+      max-width: 1280px;
+    }
+    #single-view img {
+      width: 100%;
+      max-width: 1280px;
+      border-radius: 8px;
+    }
+
+    .back-button {
+      align-self: flex-start;
+      background: var(--color-primary);
+      color: white;
+      border: none;
+      padding: 8px 14px;
+      border-radius: 5px;
+      margin-bottom: 1rem;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+
+    .back-button:hover {
+      background: #16a085;
+    }
+
+    /* --- Config View --- */
+    #config-view {
+      display: none;
+      flex-direction: column;
+      height: 100%;
+    }
+
+    #config-view h2 {
+      margin-bottom: 10px;
+    }
+
+    #config-editor {
+      flex-grow: 1;
+      width: 100%;
+      padding: 10px;
+      font-family: monospace;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+      background: white;
+    }
+
+    .save-button {
+      margin-top: 10px;
+      padding: 10px 18px;
+      background: var(--color-primary);
+      border: none;
+      color: white;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+
+    .save-button:hover {
+      background: #16a085;
+    }
+
+    /* --- Popup de Clases --- */
+    .popup-overlay {
+      position: fixed;
+      top: 0; left: 0; width: 100%; height: 100%;
+      background: rgba(0,0,0,0.5);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+    }
+    .popup-content {
+      background: white;
+      padding: 20px;
+      border-radius: 8px;
+      width: 90%;
+      max-width: 400px;
+    }
+    .popup-content h3 { margin-top: 0; }
+    .class-selection-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+      gap: 10px;
+    }
+    .class-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .popup-buttons {
+      margin-top: 20px;
+      text-align: right;
+    }
+    .popup-buttons button {
+      padding: 8px 16px;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      margin-left: 10px;
+    }
+    .popup-save {
+      background: var(--color-primary);
+      color: white;
+    }
+    .popup-cancel {
+      background: #eee;
+      color: #333;
+    }
+  </style>
+</head>
+
+<body>
+  <nav class="sidebar" id="sidebar">
+    <h1>📹 SivCam</h1>
+    <ul class="nav-list">
+      <li class="nav-item active" id="nav-cameras" onclick="showView('cameras')">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M17,10.5V7A1,1 0 0,0 16,6H4A1,1 0 0,0 3,7V17A1,1 0 0,0 4,18H16A1,1 0 0,0 17,17V13.5L21,17.5V6.5L17,10.5Z"/></svg>
+        <span>Cámaras</span>
+      </li>
+      <li class="nav-item" id="nav-config" onclick="showView('config')">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12,8A4,4 0 1,1 8,12A4,4 0 0,1 12,8Z"/></svg>
+        <span>Configuración</span>
+      </li>
+    </ul>
+  </nav>
+
+  <main class="main-content">
+    <div class="main-header">
+      <button class="sidebar-toggle" onclick="toggleSidebar()">☰</button>
+    </div>
+
+    <div id="cameras-view">
+      <div id="grid-container">
+        {% for cam in cameras %}
+        <div class="video-wrapper" data-camera-name="{{ cam.name }}">
+          <img src="{{ url_for('video_feed', camera_name=cam.name) }}" alt="{{ cam.name }}" onclick="showSingleView('{{ url_for('video_feed', camera_name=cam.name) }}', '{{ cam.name }}')">
+          <div class="camera-name">
+            <span class="camera-id">#{{ cam.id }}</span>{{ cam.name }}
+          </div>
+          <div class="motion-icon" id="motion-icon-{{ cam.name }}" title="Detección de Movimiento">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M14.12,10H12.88L11.5,14.25L9.25,7.5L6,13H4V11H5.5L8.03,8.47L10.5,15.5L12.5,11.5H14.5V13H16V10H14.12M12,4A4,4 0 0,1 16,8A4,4 0 0,1 12,12A4,4 0 0,1 8,8A4,4 0 0,1 12,4M12,2A6,6 0 0,0 6,8C6,11.31 8.69,14 12,14A6,6 0 0,0 18,8C18,4.69 15.31,2 12,2Z"/></svg>
+          </div>
+          <div class="camera-controls">
+            <div class="control-wrapper">
+              <span class="control-label">Sens</span>
+              <div class="sensitivity-control" title="Ajustar Sensibilidad de Movimiento">
+                <input type="range" min="100" max="10000" step="100" value="{{ cam.motion_sensitivity }}" onchange="updateSensitivity(this, '{{ cam.name }}')">
+              </div>
+            </div>
+            <div class="control-wrapper">
+              <span class="control-label">Ver Mov.</span>
+              <label class="switch" title="Mostrar/Ocultar Contornos de Movimiento">
+                <input type="checkbox" onchange="toggleMotion(this, '{{ cam.name }}')" {{ 'checked' if cam.get('show_motion_contours', False) }}>
+                <span class="slider"></span>
+              </label>
+            </div>
+            <div class="control-wrapper">
+              <span class="control-label">Cajas</span>
+              <label class="switch" title="Mostrar/Ocultar Cajas de Detección (Boxes)">
+                <input type="checkbox" onchange="toggleBbox(this, '{{ cam.name }}')" {{ 'checked' if cam.get('show_bbox', True) }}>
+                <span class="slider"></span>
+              </label>
+            </div>
+            <button class="control-btn" onclick="openClassSelector('{{ cam.name }}')">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M15.5,12C18,12 20,14 20,16.5C20,17.38 19.75,18.21 19.31,18.9L22.39,22L21,23.39L17.88,20.32C17.19,20.75 16.37,21 15.5,21C13,21 11,19 11,16.5C11,14 13,12 15.5,12M15.5,14A2.5,2.5 0 0,0 13,16.5A2.5,2.5 0 0,0 15.5,19A2.5,2.5 0 0,0 18,16.5A2.5,2.5 0 0,0 15.5,14M9,4L6.5,7H3V19H10.21C10.07,18.5 10,18 10,17.5C10,17.14 10.04,16.78 10.11,16.43L8,14V9H10.5L13,6H18V10.35C18.65,10.85 19.23,11.45 19.68,12.13L21,10.81V7A2,2 0 0,0 19,5H14L11.5,2H6A2,2 0 0,0 4,4V19A2,2 0 0,0 6,21H11.33C10.5,20.22 10,19.19 10,18C10,17.83 10,17.67 10.03,17.5H9V9H7.5L9,6.5V4Z" /></svg>
+            </button>
+            <div class="control-wrapper">
+              <span class="control-label">On</span>
+              <label class="switch" title="Encender/Apagar Cámara">
+                <input type="checkbox" onchange="toggleCamera(this, '{{ cam.name }}')" {{ 'checked' if cam.enabled }}>
+                <span class="slider"></span>
+              </label>
+            </div>
+          </div>
+          <div class="detected-classes-icons" id="icons-{{ cam.name }}">
+             <!-- Los iconos de clases se insertarán aquí con JS -->
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+
+      <div id="single-view">
+        <button class="back-button" onclick="showGridView()">← Volver</button>
+        <div id="single-view-container">
+          <img id="single-view-image" src="">
+        </div>
+      </div>
+    </div>
+
+    <div id="config-view">
+      <h2>Configuración del sistema</h2>
+      <textarea id="config-editor" rows="20"></textarea>
+      <button class="save-button" onclick="saveConfig()">💾 Guardar</button>
+    </div>
+  </main>
+  
+  <div class="popup-overlay" id="class-selector-popup">
+    <div class="popup-content">
+      <h3>Seleccionar clases a detectar</h3>
+      <div class="class-selection-grid" id="class-selection-grid">
+        <!-- Las opciones se generarán con JS -->
+      </div>
+      <div class="popup-buttons">
+        <button class="popup-cancel" onclick="closeClassSelector()">Cancelar</button>
+        <button class="popup-save" onclick="saveClassSelection()">Guardar</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const sidebar = document.getElementById('sidebar');
+    const camerasView = document.getElementById('cameras-view');
+    const configView = document.getElementById('config-view');
+    const gridContainer = document.getElementById('grid-container');
+    const singleView = document.getElementById('single-view');
+    const singleViewImage = document.getElementById('single-view-image');
+    const singleViewContainer = document.getElementById('single-view-container');
+    const classSelectorPopup = document.getElementById('class-selector-popup');
+    const classSelectionGrid = document.getElementById('class-selection-grid');
+    let currentEditingCamera = null;
+
+    const COCO_CLASSES = {
+      0: 'Persona',
+      1: 'Bicicleta',
+      2: 'Coche',
+      3: 'Motocicleta',
+      5: 'Autobús',
+      7: 'Camión',
+      24: 'Mochila',
+      26: 'Bolso',
+      28: 'Maleta'
+    };
+
+    // Almacenar la configuración inicial de las cámaras
+    const cameraConfigs = {
+      {% for cam in cameras %}
+        "{{ cam.name }}": { 
+          detect_classes: {{ cam.detect_classes | tojson }},
+          show_bbox: {{ cam.get('show_bbox', True) | tojson }},
+          motion_sensitivity: {{ cam.get('motion_sensitivity', 1000) | tojson }},
+          show_motion_contours: {{ cam.get('show_motion_contours', False) | tojson }}
+        }
+        {{ "," if not loop.last }}
+      {% endfor %}
+    };
+
+    function toggleSidebar() {
+      sidebar.classList.toggle('collapsed');
+    }
+
+    function showView(view) {
+      configView.style.display = 'none';
+      document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
+
+      if (view === 'cameras') {
+        camerasView.style.display = 'block';
+        configView.style.display = 'none';
+        document.getElementById('nav-cameras').classList.add('active');
+      } else {
+        configView.style.display = 'flex';
+        document.getElementById('nav-config').classList.add('active');
+        loadConfig();
+      }
+    }
+
+    function showSingleView(src, cameraName) {
+      gridContainer.style.display = 'none';
+      singleView.style.display = 'flex';
+      singleViewImage.src = src;
+
+      // Clonar los controles y los iconos para mostrarlos en la vista individual
+      const originalControls = document.querySelector(`.video-wrapper[data-camera-name="${cameraName}"] .camera-controls`);
+      const originalIcons = document.querySelector(`.video-wrapper[data-camera-name="${cameraName}"] .detected-classes-icons`);
+      const originalMotionIcon = document.querySelector(`.video-wrapper[data-camera-name="${cameraName}"] .motion-icon`);
+
+      if (originalControls) {
+        const clonedControls = originalControls.cloneNode(true);
+        singleViewContainer.appendChild(clonedControls);
+      }
+      if (originalIcons) {
+        const clonedIcons = originalIcons.cloneNode(true);
+        singleViewContainer.appendChild(clonedIcons);
+      }
+      if (originalMotionIcon) {
+        const clonedMotionIcon = originalMotionIcon.cloneNode(true);
+        singleViewContainer.appendChild(clonedMotionIcon);
+      }
+    }
+
+    function showGridView() {
+      singleView.style.display = 'none';
+      singleViewImage.src = "";
+      // Limpiar los controles clonados de la vista individual
+      singleViewContainer.querySelectorAll('.camera-controls, .detected-classes-icons, .motion-icon').forEach(el => el.remove());
+      gridContainer.style.display = 'grid';
+    }
+
+    async function loadConfig() {
+      const res = await fetch('/api/config');
+      document.getElementById('config-editor').value = await res.text(); // asume yaml
+    }
+
+    async function saveConfig() {
+      const content = document.getElementById('config-editor').value;
+      const res = await fetch('/api/config', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ content })
+      });
+      const result = await res.json();
+      alert(result.message);
+    }
+
+    async function toggleCamera(checkbox, cameraName) {
+      const isEnabled = checkbox.checked;
+      await fetch(`/api/camera/${cameraName}/toggle`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ enabled: isEnabled })
+      });
+      // Opcional: podrías querer cambiar la opacidad o mostrar un ícono de "apagado"
+      const videoWrapper = document.querySelector(`.video-wrapper[data-camera-name="${cameraName}"]`);
+      videoWrapper.style.opacity = isEnabled ? 1 : 0.5;
+    }
+
+    async function toggleBbox(checkbox, cameraName) {
+      const isVisible = checkbox.checked;
+      cameraConfigs[cameraName].show_bbox = isVisible;
+      await fetch(`/api/camera/${cameraName}/toggle_bbox`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ show: isVisible })
+      });
+    }
+
+    async function toggleMotion(checkbox, cameraName) {
+      const isVisible = checkbox.checked;
+      cameraConfigs[cameraName].show_motion_contours = isVisible;
+      await fetch(`/api/camera/${cameraName}/toggle_motion`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ show: isVisible })
+      });
+    }
+
+    async function updateSensitivity(slider, cameraName) {
+        const sensitivity = slider.value;
+        cameraConfigs[cameraName].motion_sensitivity = sensitivity;
+        await fetch(`/api/camera/${cameraName}/motion_sensitivity`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ sensitivity: sensitivity })
+        });
+    }
+
+    function openClassSelector(cameraName) {
+      currentEditingCamera = cameraName;
+      classSelectionGrid.innerHTML = '';
+      const currentClasses = cameraConfigs[cameraName].detect_classes;
+
+      for (const [id, name] of Object.entries(COCO_CLASSES)) {
+        const isChecked = currentClasses.includes(parseInt(id));
+        classSelectionGrid.innerHTML += `
+          <label class="class-item">
+            <input type="checkbox" value="${id}" ${isChecked ? 'checked' : ''}>
+            <span>${name}</span>
+          </label>
+        `;
+      }
+      classSelectorPopup.style.display = 'flex';
+    }
+
+    function closeClassSelector() {
+      classSelectorPopup.style.display = 'none';
+      currentEditingCamera = null;
+    }
+
+    async function saveClassSelection() {
+      if (!currentEditingCamera) return;
+
+      const selectedClasses = Array.from(classSelectionGrid.querySelectorAll('input:checked'))
+                                   .map(input => input.value);
+      
+      await fetch(`/api/camera/${currentEditingCamera}/classes`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ classes: selectedClasses })
+      });
+
+      // Actualizar estado local
+      cameraConfigs[currentEditingCamera].detect_classes = selectedClasses.map(c => parseInt(c));
+      updateClassIcons(currentEditingCamera);
+      closeClassSelector();
+    }
+
+    function updateClassIcons(cameraName) {
+        const container = document.getElementById(`icons-${cameraName}`);
+        container.innerHTML = '';
+        if (!cameraConfigs[cameraName] || !cameraConfigs[cameraName].detect_classes) return;
+
+        cameraConfigs[cameraName].detect_classes.forEach(classId => {
+            const className = COCO_CLASSES[classId] || 'unk';
+            const icon = document.createElement('div');
+            icon.className = 'class-icon'; // La clase 'detected' se añadirá dinámicamente
+            icon.id = `icon-${cameraName}-${classId}`;
+            icon.textContent = className.substring(0, 4); // e.g., 'pers', 'car'
+            icon.title = className;
+            container.appendChild(icon);
+        });
+    }
+
+    async function pollStatus() {
+      try {
+        const res = await fetch('/api/status');
+        const statuses = await res.json();
+        for (const cameraName in statuses) {
+          if (!cameraConfigs[cameraName]) continue;
+          
+          const status = statuses[cameraName];
+          const currentlyDetected = status.detected_classes;
+          const configuredClasses = cameraConfigs[cameraName].detect_classes;
+          
+          configuredClasses.forEach(classId => {
+            const icons = document.querySelectorAll(`#icon-${cameraName}-${classId}`);
+            const isDetected = currentlyDetected.includes(classId);
+            icons.forEach(icon => icon.classList.toggle('detected', isDetected));
+          });
+
+          // Actualizar icono de movimiento
+          const motionIcons = document.querySelectorAll(`#motion-icon-${cameraName}`);
+          motionIcons.forEach(icon => icon.classList.toggle('detected', status.motion_detected));
+        }
+      } catch (e) {
+        console.error("Error polling status:", e);
+      }
+    }
+
+    // Inicializar estado al cargar la página
+    document.addEventListener('DOMContentLoaded', () => {
+        document.querySelectorAll('.video-wrapper').forEach(wrapper => {
+            const cameraName = wrapper.dataset.cameraName;
+            wrapper.style.opacity = wrapper.querySelector('input[type="checkbox"]').checked ? 1 : 0.5;
+            updateClassIcons(cameraName);
+        });
+        // Empezar a consultar el estado de las detecciones cada segundo
+        setInterval(pollStatus, 1000);
+    });
+  </script>
+</body>
+</html>
