@@ -1,17 +1,22 @@
-<div id="events-view" style="display: none; flex-direction: column; height: 100%;">
-  <h2>Eventos Guardados</h2>
-  <div class="event-filters">
-    <select id="event-camera-select"></select>
-    <input type="date" id="event-date-select">
-    <button onclick="loadEvents()">Buscar</button>
-  </div>
-  <div id="events-content-wrapper">
-    <div id="event-gallery-wrapper">
-      <div id="event-gallery-container"></div>
+<div id="events-view" class="view">
+  <div class="view-header">
+    <h1 class="view-title">Registro de Eventos</h1>
+    <div class="view-actions">
+      <!-- Filtros y acciones para eventos -->
     </div>
-    <div id="event-detail-view">
-      <div id="event-detail-image-container"></div>
-      <div id="event-detail-json"></div>
+  </div>
+
+  <div class="view-content">
+    <div class="events-container">
+      <div class="events-filter-bar">
+        <select id="event-camera-selector" class="form-select"></select>
+        <input type="date" id="event-date-picker" class="form-input">
+        <button id="load-events-btn" class="btn btn-primary">Cargar Eventos</button>
+      </div>
+      <div id="events-list" class="events-list">
+        <!-- Los eventos se cargarán aquí dinámicamente -->
+        <p class="placeholder-text">Selecciona una cámara y una fecha para ver los eventos.</p>
+      </div>
     </div>
   </div>
 </div>

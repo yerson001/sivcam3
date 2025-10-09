@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SivCam - Sistema de Monitoreo</title>
+  
+  <!-- Fuentes premium -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  
+  <!-- Estilos -->
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/components/sidebar.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/components/camera-grid.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/components/events.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/components/config.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}">
+</head>
+
+<body>
+  <div class="app-container">
+    {% include 'components/sidebar.html' %}
+    
+    <main class="main-content">
+      <div class="main-header">
+        <button class="sidebar-toggle" id="sidebarToggle">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M3 12H21" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+            <path d="M3 6H21" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+            <path d="M3 18H21" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+          </svg>
+        </button>
+        <div class="header-actions">
+          <div class="user-profile">
+            <span>Administrador</span>
+            <div class="avatar">A</div>
+          </div>
+        </div>
+      </div>
+
+      {% block content %}{% endblock %}
+    </main>
+  </div>
+
+  <!-- Scripts -->
+  <script src="{{ url_for('static', filename='js/app.js') }}"></script>
+  <script src="{{ url_for('static', filename='js/camera-manager.js') }}"></script>
+  <script src="{{ url_for('static', filename='js/event-manager.js') }}"></script>
+  <script src="{{ url_for('static', filename='js/config-manager.js') }}"></script>
+</body>
+</html>

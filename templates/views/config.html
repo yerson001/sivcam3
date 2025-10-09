@@ -1,5 +1,15 @@
-<div id="config-view">
-  <h2>Configuración del sistema</h2>
-  <textarea id="config-editor" rows="20"></textarea>
-  <button class="save-button" onclick="saveConfig()">💾 Guardar</button>
+<div id="config-view" class="view">
+  <div class="view-header">
+    <h1 class="view-title">Configuración del Sistema</h1>
+    <div class="view-actions">
+      <button id="save-config-btn" class="btn btn-primary">Guardar Configuración</button>
+    </div>
+  </div>
+
+  <div class="view-content">
+    <div id="config-editor-container">
+      <p>Cargando editor...</p>
+      <!-- El editor de texto (CodeMirror, etc.) se inicializará aquí -->
+    </div>
+  </div>
 </div>

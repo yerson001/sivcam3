@@ -1,68 +1,126 @@
-<div id="cameras-view">
-  <div id="grid-container">
-    {% for cam in cameras %}
-    <div class="video-wrapper" data-camera-name="{{ cam.name }}">
-      <img src="{{ url_for('video_feed', camera_name=cam.name) }}" alt="{{ cam.name }}" onclick="showSingleView('{{ url_for('video_feed', camera_name=cam.name) }}', '{{ cam.name }}')">
-      <div class="camera-name">
-        <span class="camera-id">#{{ cam.id }}</span>{{ cam.name }}
-      </div>
-      <div class="motion-icon" id="motion-icon-{{ cam.name }}" title="Detección de Movimiento">
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M14.12,10H12.88L11.5,14.25L9.25,7.5L6,13H4V11H5.5L8.03,8.47L10.5,15.5L12.5,11.5H14.5V13H16V10H14.12M12,4A4,4 0 0,1 16,8A4,4 0 0,1 12,12A4,4 0 0,1 8,8A4,4 0 0,1 12,4M12,2A6,6 0 0,0 6,8C6,11.31 8.69,14 12,14A6,6 0 0,0 18,8C18,4.69 15.31,2 12,2Z"/></svg>
-      </div>
-      <div class="camera-controls">
-        <div class="control-wrapper">
-          <span class="control-label">Sens</span>
-          <div class="sensitivity-control" title="Ajustar Sensibilidad de Movimiento">
-            <input type="range" min="100" max="10000" step="100" value="{{ cam.motion_sensitivity }}" onchange="updateSensitivity(this, '{{ cam.name }}')">
-          </div>
-        </div>
-        <div class="control-wrapper">
-          <span class="control-label">Ver Mov.</span>
-          <label class="switch" title="Mostrar/Ocultar Contornos de Movimiento">
-            <input type="checkbox" onchange="toggleMotion(this, '{{ cam.name }}')" {{ 'checked' if cam.get('show_motion_contours', False) }}>
-            <span class="slider"></span>
-          </label>
-        </div>
-        <div class="control-wrapper">
-          <span class="control-label">Cajas</span>
-          <label class="switch" title="Mostrar/Ocultar Cajas de Detección (Boxes)">
-            <input type="checkbox" onchange="toggleBbox(this, '{{ cam.name }}')" {{ 'checked' if cam.get('show_bbox', True) }}>
-            <span class="slider"></span>
-          </label>
-        </div>
-        <button class="control-btn" onclick="openClassSelector('{{ cam.name }}')">
-          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M15.5,12C18,12 20,14 20,16.5C20,17.38 19.75,18.21 19.31,18.9L22.39,22L21,23.39L17.88,20.32C17.19,20.75 16.37,21 15.5,21C13,21 11,19 11,16.5C11,14 13,12 15.5,12M15.5,14A2.5,2.5 0 0,0 13,16.5A2.5,2.5 0 0,0 15.5,19A2.5,2.5 0 0,0 18,16.5A2.5,2.5 0 0,0 15.5,14M9,4L6.5,7H3V19H10.21C10.07,18.5 10,18 10,17.5C10,17.14 10.04,16.78 10.11,16.43L8,14V9H10.5L13,6H18V10.35C18.65,10.85 19.23,11.45 19.68,12.13L21,10.81V7A2,2 0 0,0 19,5H14L11.5,2H6A2,2 0 0,0 4,4V19A2,2 0 0,0 6,21H11.33C10.5,20.22 10,19.19 10,18C10,17.83 10,17.67 10.03,17.5H9V9H7.5L9,6.5V4Z" /></svg>
-        </button>
-        <div class="control-wrapper">
-          <span class="control-label">On</span>
-          <label class="switch" title="Encender/Apagar Cámara">
-            <input type="checkbox" onchange="toggleCamera(this, '{{ cam.name }}')" {{ 'checked' if cam.enabled }}>
-            <span class="slider"></span>
-          </label>
-        </div>
-      </div>
-      <div class="detected-classes-icons" id="icons-{{ cam.name }}">
-         <!-- Los iconos de clases se insertarán aquí con JS -->
-      </div>
+<div id="cameras-view" class="view active">
+  <div class="view-header">
+    <h1 class="view-title">Monitor de Cámaras</h1>
+    <div class="view-actions">
+      <button class="btn btn-secondary" id="refreshCameras">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M17.65 6.35C16.2 4.9 14.21 4 12 4C7.58 4 4.01 7.58 4.01 12C4.01 16.42 7.58 20 12 20C15.73 20 18.84 17.45 19.73 14H17.65C16.83 16.33 14.61 18 12 18C8.69 18 6 15.31 6 12C6 8.69 8.69 6 12 6C13.66 6 15.14 6.69 16.22 7.78L13 11H20V4L17.65 6.35Z" fill="currentColor"/>
+        </svg>
+        Actualizar
+      </button>
     </div>
-    {% endfor %}
   </div>
 
-  <div id="single-view">
-    <button class="back-button" onclick="showGridView()">← Volver</button>
-    <div id="single-view-container">
-      <img id="single-view-image" src="">
+  <div class="view-content">
+    <div id="grid-container" class="cameras-grid">
+      {% for cam in cameras %}
+      <div class="camera-card" data-camera-name="{{ cam.name }}">
+        <div class="camera-header">
+          <h3 class="camera-name">{{ cam.name }}</h3>
+          <div class="camera-status">
+            <span class="status-badge online">En línea</span>
+          </div>
+        </div>
+        
+        <div class="video-wrapper">
+          <img src="{{ url_for('video_feed', camera_name=cam.name) }}" alt="{{ cam.name }}">
+          
+          <div class="detection-overlay">
+            <div class="detected-classes" id="icons-{{ cam.name }}"></div>
+            <div class="motion-indicator" id="motion-icon-{{ cam.name }}">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M13 2V4.06C16.95 4.56 20 7.92 20 12C20 16.08 16.95 19.44 13 19.94V22H11V19.94C7.05 19.44 4 16.08 4 12C4 7.92 7.05 4.56 11 4.06V2H13ZM12 6C8.69 6 6 8.69 6 12C6 15.31 8.69 18 12 18C15.31 18 18 15.31 18 12C18 8.69 15.31 6 12 6Z" fill="currentColor"/>
+              </svg>
+            </div>
+          </div>
+          
+          <div class="camera-controls">
+            <div class="control-group">
+              <label class="control-label">Sensibilidad</label>
+              <div class="sensitivity-control">
+                <input type="range" min="500" max="2000" value="{{ cam.get('motion_sensitivity', 1000) }}" 
+                       oninput="updateSensitivity(this, '{{ cam.name }}')">
+                <span class="sensitivity-value">{{ cam.get('motion_sensitivity', 1000) }}</span>
+              </div>
+            </div>
+            
+            <div class="control-buttons">
+              <button class="control-btn" onclick="openClassSelector('{{ cam.name }}')" title="Configurar detección">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M12,8A4,4 0 1,1 8,12A4,4 0 0,1 12,8Z" fill="currentColor"/>
+                </svg>
+              </button>
+              
+              <div class="toggle-control">
+                <label class="toggle-label">BBox</label>
+                <label class="switch">
+                  <input type="checkbox" {{ 'checked' if cam.get('show_bbox', True) }} 
+                         onchange="toggleBbox(this, '{{ cam.name }}')">
+                  <span class="slider"></span>
+                </label>
+              </div>
+              
+              <div class="toggle-control">
+                <label class="toggle-label">Activa</label>
+                <label class="switch">
+                  <input type="checkbox" {{ 'checked' if cam.get('enabled', True) }} 
+                         onchange="toggleCamera(this, '{{ cam.name }}')">
+                  <span class="slider"></span>
+                </label>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <div class="camera-footer">
+          <div class="camera-stats">
+            <span class="stat">ID: {{ cam.id }}</span>
+            <span class="stat">Res: 1080p</span>
+          </div>
+          <button class="btn-expand" onclick="showSingleView('{{ url_for('video_feed', camera_name=cam.name) }}', '{{ cam.name }}')">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M7 14H5V21H12V19H7V14ZM5 10H7V3H12V1H5V10ZM19 10H21V1H14V3H19V10ZM21 14H19V21H14V23H21V14Z" fill="currentColor"/>
+            </svg>
+          </button>
+        </div>
+      </div>
+      {% endfor %}
     </div>
   </div>
 </div>
 
-<div class="popup-overlay" id="class-selector-popup" style="display: none;">
+<!-- Vista individual de cámara -->
+<div id="single-view" class="single-view">
+  <div class="single-view-header">
+    <button class="back-button" onclick="showGridView()">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M20 11H7.83L13.42 5.41L12 4L4 12L12 20L13.41 18.59L7.83 13H20V11Z" fill="currentColor"/>
+      </svg>
+      Volver a la cuadrícula
+    </button>
+    <h2 id="single-view-title">Vista de Cámara</h2>
+  </div>
+  
+  <div class="single-view-content">
+    <div id="single-view-container">
+      <img id="single-view-image" src="" alt="Vista individual">
+    </div>
+  </div>
+</div>
+
+<!-- Selector de clases -->
+<div class="popup-overlay" id="class-selector-popup">
   <div class="popup-content">
-      <h3>Seleccionar clases a detectar</h3>
-      <div class="class-selection-grid" id="class-selection-grid"></div>
-      <div class="popup-buttons">
-          <button class="popup-cancel" onclick="closeClassSelector()">Cancelar</button>
-          <button class="popup-save" onclick="saveClassSelection()">Guardar</button>
-      </div>
+    <div class="popup-header">
+      <h3>Configurar Detección de Objetos</h3>
+      <button class="popup-close" onclick="closeClassSelector()">×</button>
+    </div>
+    
+    <div class="class-selection-grid" id="class-selection-grid"></div>
+    
+    <div class="popup-buttons">
+      <button class="btn btn-secondary" onclick="closeClassSelector()">Cancelar</button>
+      <button class="btn btn-primary" onclick="saveClassSelection()">Guardar</button>
+    </div>
   </div>
 </div>
