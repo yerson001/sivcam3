@@ -23,6 +23,7 @@ STATIC_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'static')
 class CameraThread(threading.Thread):
     def __init__(self, camera_config):
         super().__init__()
+        self.daemon = True # <-- ¡Esta es la corrección!
         self.config = camera_config
         # Añadimos el mapeo de clases de COCO para tener los nombres
         self.coco_classes = model.names
