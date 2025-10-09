@@ -6,17 +6,30 @@
   <title>SivCam</title>
   <style>
     :root {
+      /* Paleta de Colores Dark Premium */
       --sidebar-width: 220px;
-      --color-bg: #f5f6fa;
-      --color-primary: #1abc9c;
-      --color-dark: #2c3e50;
-      --color-light: #ecf0f1;
+      --color-primary: #3b82f6; /* Azul Cibernético */
+      --color-primary-dark: #2563eb;
+      --color-bg: #111827; /* Gris-Azul Muy Oscuro */
+      --color-surface-1: #1f2937; /* Gris Pizarra Oscuro */
+      --color-surface-2: #374151; /* Gris Acero */
+      --color-border: #4b5563;
+      --color-text-primary: #e5e7eb;
+      --color-text-secondary: #9ca3af;
+      --color-success: #10b981; /* Verde Estado */
+      --color-danger: #ef4444; /* Rojo Alerta */
+      --color-warning: #f59e0b; /* Ámbar Profesional */
+
+      --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+      --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.1);
+      --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -4px rgba(0, 0, 0, 0.1);
     }
 
     body {
       margin: 0;
-      font-family: "Inter", Arial, sans-serif;
+      font-family: "Inter", "Segoe UI", Arial, sans-serif;
       background-color: var(--color-bg);
+      color: var(--color-text-primary);
       display: flex;
       height: 100vh;
       overflow: hidden;
@@ -25,8 +38,9 @@
     /* --- Sidebar --- */
     .sidebar {
       width: var(--sidebar-width);
-      background: var(--color-dark);
-      color: var(--color-light);
+      background: var(--color-surface-1);
+      border-right: 1px solid var(--color-border);
+      color: var(--color-text-primary);
       display: flex;
       flex-direction: column;
       padding: 1rem;
@@ -37,9 +51,11 @@
     }
 
     .sidebar h1 {
-      font-size: 20px;
+      font-size: 22px;
       text-align: center;
       margin-bottom: 1.5rem;
+      color: var(--color-primary);
+      font-weight: 600;
     }
 
     .nav-list {
@@ -56,14 +72,17 @@
       border-radius: 8px;
       cursor: pointer;
       transition: background 0.2s;
+      font-weight: 500;
     }
 
     .nav-item:hover {
-      background: rgba(255,255,255,0.1);
+      background: var(--color-surface-2);
     }
 
     .nav-item.active {
       background: var(--color-primary);
+      color: white;
+      box-shadow: 0 0 15px rgba(59, 130, 246, 0.5);
     }
 
     .nav-item svg {
@@ -82,30 +101,13 @@
       display: flex;
       flex-direction: column;
       padding: 1rem;
-      overflow-y: auto;
+      overflow: hidden; /* Controlado por hijos */
     }
 
     .main-header {
       margin-bottom: 1rem;
-    }
-
-    .event-list {
-      flex-grow: 1;
-      overflow-y: auto;
-      padding: 10px;
-      font-size: 12px;
-    }
-    .event-item {
-      margin-bottom: 8px;
-      padding-bottom: 8px;
-      border-bottom: 1px solid #f0f0f0;
-    }
-    .event-item:last-child {
-      border-bottom: none;
-    }
-    .event-time {
-      font-weight: bold;
-      color: #555;
+      display: flex;
+      align-items: center;
     }
     .event-details {
       color: #333;
@@ -115,8 +117,8 @@
       background: none;
       border: none;
       font-size: 24px;
-      cursor: pointer;
-      color: var(--color-dark);
+      cursor: pointer;      
+      color: var(--color-text-secondary);
       margin-right: auto;
     }
 
@@ -124,21 +126,26 @@
     #grid-container {
       display: grid;
       grid-template-columns: repeat(auto-fill, minmax(400px, 1fr));
-      gap: 15px;
+      gap: 20px;
+      height: 100%;
+      overflow-y: auto;
+      padding-right: 10px; /* Para la barra de scroll */
     }
 
     .video-wrapper {
       position: relative;
-      background: #000;
-      border-radius: 10px;
+      background: #0a0a0a;
+      border-radius: 8px;
       overflow: hidden;
       aspect-ratio: 16/9;
       cursor: pointer;
-      transition: transform 0.2s;
+      transition: transform 0.2s, box-shadow 0.2s;
+      border: 1px solid var(--color-surface-2);
+      box-shadow: var(--shadow-md);
     }
 
     .video-wrapper:hover {
-      transform: scale(1.02);
+      box-shadow: 0 0 15px rgba(59, 130, 246, 0.3), 0 0 5px rgba(59, 130, 246, 0.5);
     }
 
     img {
@@ -152,19 +159,18 @@
       position: absolute;
       bottom: 8px;
       left: 8px;
-      background: rgba(0, 0, 0, 0.5);
+      background: rgba(17, 24, 39, 0.7);
+      backdrop-filter: blur(5px);
       color: white;
       padding: 4px 8px;
-      border-radius: 4px;
+      border-radius: 6px;
       font-size: 13px;
+      font-weight: 500;
     }
 
     .camera-id {
       font-weight: bold;
       color: var(--color-primary);
-      background: rgba(44, 62, 80, 0.7);
-      padding: 2px 5px;
-      border-radius: 3px;
       margin-right: 6px;
     }
 
@@ -176,16 +182,17 @@
       gap: 5px;
     }
     .class-icon {
-      background: rgba(0, 0, 0, 0.5);
-      color: white;
+      background: var(--color-surface-2);
+      color: var(--color-text-secondary);
       padding: 3px 6px;
-      border-radius: 4px;
+      border-radius: 5px;
       font-size: 12px;
-      transition: background-color 0.2s, color 0.2s;
+      font-weight: 500;
+      transition: all 0.2s;
     }
     .class-icon.detected {
-      background-color: var(--color-primary);
-      color: var(--color-dark);
+      background-color: var(--color-warning);
+      color: #111827;
       font-weight: bold;
     }
 
@@ -193,7 +200,8 @@
       position: absolute;
       bottom: 8px;
       right: 8px;
-      background: rgba(0, 0, 0, 0.5);
+      background: rgba(31, 41, 55, 0.7);
+      backdrop-filter: blur(5px);
       border-radius: 50%;
       width: 36px;
       height: 36px;
@@ -203,19 +211,19 @@
       transition: background-color 0.2s;
     }
     .motion-icon.detected {
-      background-color: #e74c3c; /* Rojo */
+      background-color: var(--color-danger);
       animation: pulse 1.5s infinite;
     }
     .motion-icon svg {
       width: 22px;
       height: 22px;
-      fill: white;
+      fill: var(--color-text-primary);
     }
 
     @keyframes pulse {
       0% {
         transform: scale(1);
-        box-shadow: 0 0 0 0 rgba(231, 76, 60, 0.7);
+        box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7);
       }
       70% {
         transform: scale(1.05);
@@ -223,7 +231,7 @@
       }
       100% {
         transform: scale(1);
-        box-shadow: 0 0 0 0 rgba(231, 76, 60, 0);
+        box-shadow: 0 0 0 0 rgba(239, 68, 68, 0);
       }
     }
 
@@ -233,7 +241,11 @@
       top: 8px;
       right: 8px;
       display: flex;
-      gap: 8px;
+      gap: 6px;
+      background: rgba(17, 24, 39, 0.7);
+      backdrop-filter: blur(5px);
+      padding: 6px;
+      border-radius: 8px;
       align-items: center;
     }
 
@@ -246,7 +258,7 @@
 
     .control-label {
       font-size: 10px;
-      color: white;
+      color: var(--color-text-secondary);
       font-weight: 500;
       text-transform: uppercase;
       line-height: 1;
@@ -256,18 +268,16 @@
       display: flex;
       align-items: center;
       gap: 5px;
-      background: rgba(0, 0, 0, 0.5);
-      padding: 2px 8px;
-      border-radius: 12px;
     }
     .sensitivity-control input[type="range"] {
       width: 80px;
       cursor: pointer;
       margin: 0;
+      -webkit-appearance: none;
+      background: transparent;
     }
 
     .control-btn {
-      background: rgba(0, 0, 0, 0.5);
       border: none;
       color: white;
       border-radius: 50%;
@@ -277,8 +287,39 @@
       display: flex;
       align-items: center;
       justify-content: center;
+      background: var(--color-surface-2);
+      transition: background 0.2s;
     }
-    .control-btn svg { width: 16px; height: 16px; fill: white; }
+    .control-btn:hover {
+      background: var(--color-primary);
+    }
+    .control-btn svg { width: 16px; height: 16px; fill: var(--color-text-primary); }
+
+    /* --- Custom Range Slider --- */
+    input[type=range]::-webkit-slider-runnable-track {
+      height: 4px;
+      background: var(--color-surface-2);
+      border-radius: 2px;
+    }
+    input[type=range]::-moz-range-track {
+      height: 4px;
+      background: var(--color-surface-2);
+      border-radius: 2px;
+    }
+    input[type=range]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      height: 14px;
+      width: 14px;
+      border-radius: 50%;
+      background: var(--color-text-primary);
+      margin-top: -5px;
+      border: 2px solid var(--color-surface-2);
+    }
+    input[type=range]:active::-webkit-slider-thumb {
+      background: var(--color-primary);
+      border-color: var(--color-primary);
+    }
+
 
     /* Switch Toggle */
     .switch {
@@ -292,7 +333,7 @@
       position: absolute;
       cursor: pointer;
       top: 0; left: 0; right: 0; bottom: 0;
-      background-color: #ccc;
+      background-color: var(--color-surface-2);
       transition: .4s;
       border-radius: 24px;
     }
@@ -307,7 +348,7 @@
       transition: .4s;
       border-radius: 50%;
     }
-    input:checked + .slider { background-color: var(--color-primary); }
+    input:checked + .slider { background-color: var(--color-success); }
     input:checked + .slider:before { transform: translateX(20px); }
 
     /* --- Single View --- */
@@ -325,12 +366,12 @@
     #single-view img {
       width: 100%;
       max-width: 1280px;
-      border-radius: 8px;
+      border-radius: 10px;
     }
 
     .back-button {
       align-self: flex-start;
-      background: var(--color-primary);
+      background: var(--color-surface-2);
       color: white;
       border: none;
       padding: 8px 14px;
@@ -341,7 +382,7 @@
     }
 
     .back-button:hover {
-      background: #16a085;
+      background: var(--color-primary);
     }
 
     /* --- Config View --- */
@@ -352,27 +393,32 @@
     }
 
     #config-view h2 {
-      margin-bottom: 10px;
+      margin-bottom: 1rem;
     }
 
     #config-editor {
       flex-grow: 1;
       width: 100%;
       padding: 10px;
-      font-family: monospace;
-      border: 1px solid #ccc;
-      border-radius: 5px;
-      background: white;
+      font-family: "Roboto Mono", monospace;
+      border: 1px solid var(--color-border);
+      border-radius: 8px;
+      background: var(--color-surface-1);
+      color: var(--color-text-primary);
+      font-size: 14px;
     }
 
     .save-button {
       margin-top: 10px;
       padding: 10px 18px;
       background: var(--color-primary);
+      font-weight: 600;
       border: none;
       color: white;
-      border-radius: 5px;
+      border-radius: 6px;
       cursor: pointer;
+      align-self: flex-end;
+      transition: background 0.2s;
     }
 
     .save-button:hover {
@@ -384,22 +430,25 @@
       position: fixed;
       top: 0; left: 0; width: 100%; height: 100%;
       background: rgba(0,0,0,0.5);
+      backdrop-filter: blur(5px);
       display: none;
       align-items: center;
       justify-content: center;
       z-index: 1000;
     }
     .popup-content {
-      background: white;
+      background: var(--color-surface-1);
+      border: 1px solid var(--color-border);
       padding: 20px;
       border-radius: 8px;
       width: 90%;
       max-width: 400px;
+      box-shadow: var(--shadow-lg);
     }
     .popup-content h3 { margin-top: 0; }
     .class-selection-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+      grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
       gap: 10px;
     }
     .class-item {
@@ -414,17 +463,18 @@
     .popup-buttons button {
       padding: 8px 16px;
       border: none;
-      border-radius: 5px;
+      border-radius: 6px;
       cursor: pointer;
       margin-left: 10px;
+      font-weight: 500;
     }
     .popup-save {
       background: var(--color-primary);
       color: white;
     }
     .popup-cancel {
-      background: #eee;
-      color: #333;
+      background: var(--color-surface-2);
+      color: var(--color-text-primary);
     }
 
     /* --- Events View --- */
@@ -443,8 +493,10 @@
 
     .event-filters select, .event-filters input, .event-filters button {
       padding: 8px;
-      border-radius: 5px;
-      border: 1px solid #ccc;
+      border-radius: 6px;
+      border: 1px solid var(--color-border);
+      background-color: var(--color-surface-1);
+      color: var(--color-text-primary);
     }
 
     #events-content-wrapper {
@@ -468,15 +520,15 @@
     }
 
     #event-gallery-container {
-      flex-grow: 1;
       display: grid;
       align-content: start; /* Alinea los elementos al inicio */
       grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
       gap: 10px;
       padding: 5px;
-      background: #e9ecef;
-      border-radius: 5px;
+      background: var(--color-bg);
+      border-radius: 8px;
       overflow-y: auto;
+      flex-grow: 1;
     }
 
     .event-thumbnail {
@@ -484,11 +536,12 @@
       aspect-ratio: 16/9;
       cursor: pointer;
       overflow: hidden;
-      border-radius: 5px;
+      border-radius: 6px;
+      border: 2px solid transparent;
+      transition: all 0.2s;
     }
     .event-thumbnail.selected {
-      box-shadow: 0 0 0 3px var(--color-primary);
-      transform: scale(1.02);
+      border-color: var(--color-primary);
     }
     .event-thumbnail img {
       transition: transform 0.2s;
@@ -503,8 +556,8 @@
       width: 0;
       min-width: 0;
       opacity: 0;
-      background-color: #fff;
-      border-left: 1px solid #e0e0e0;
+      background-color: var(--color-surface-1);
+      border-left: 1px solid var(--color-border);
       transition: all 0.3s ease;
       overflow: hidden;
     }
@@ -521,10 +574,9 @@
     }
 
     #event-detail-json {
-      background: white;
       padding: 1rem;
-      border-radius: 8px;
       font-size: 14px;
+      color: var(--color-text-secondary);
       overflow-y: auto;
       flex-grow: 1;
     }
@@ -533,7 +585,7 @@
     #event-detail-json .color-swatch {
       display: inline-block;
       width: 12px; height: 12px;
-      border: 1px solid #ccc;
+      border: 1px solid var(--color-border);
       border-radius: 3px;
       vertical-align: middle;
     }
@@ -542,14 +594,14 @@
 
 <body>
   <nav class="sidebar" id="sidebar">
-    <h1>📹 SivCam</h1>
+    <h1>CAM</h1>
     <ul class="nav-list">
       <li class="nav-item active" id="nav-cameras" onclick="showView('cameras')">
         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M17,10.5V7A1,1 0 0,0 16,6H4A1,1 0 0,0 3,7V17A1,1 0 0,0 4,18H16A1,1 0 0,0 17,17V13.5L21,17.5V6.5L17,10.5Z"/></svg>
         <span>Cámaras</span>
       </li>
       <li class="nav-item" id="nav-config" onclick="showView('config')">
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12,8A4,4 0 1,1 8,12A4,4 0 0,1 12,8Z"/></svg>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19.14,12.94C19.03,12.42 18.89,11.93 18.72,11.45L20.71,9.46L19.29,8.05L17.3,10.04C16.82,9.87 16.33,9.73 15.81,9.62L15.5,7.5H13.5L13.19,9.62C12.67,9.73 12.18,9.87 11.7,10.04L9.71,8.05L8.29,9.46L10.28,11.45C10.11,11.93 9.97,12.42 9.86,12.94L7.5,12.63L7.5,14.63L9.86,14.94C9.97,15.46 10.11,15.95 10.28,16.43L8.29,18.42L9.71,19.84L11.7,17.85C12.18,18.02 12.67,18.16 13.19,18.27L13.5,20.5H15.5L15.81,18.27C16.33,18.16 16.82,18.02 17.3,17.85L19.29,19.84L20.71,18.42L18.72,16.43C18.89,15.95 19.03,15.46 19.14,14.94L21.5,15.25V13.25L19.14,12.94M14.5,13.75A2.5,2.5 0 0,0 12,11.25A2.5,2.5 0 0,0 9.5,13.75A2.5,2.5 0 0,0 12,16.25A2.5,2.5 0 0,0 14.5,13.75Z" /></svg>
         <span>Configuración</span>
       </li>
       <li class="nav-item" id="nav-events" onclick="showView('events')">
