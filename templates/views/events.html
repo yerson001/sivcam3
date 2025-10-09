@@ -1,0 +1,17 @@
+<div id="events-view" style="display: none; flex-direction: column; height: 100%;">
+  <h2>Eventos Guardados</h2>
+  <div class="event-filters">
+    <select id="event-camera-select"></select>
+    <input type="date" id="event-date-select">
+    <button onclick="loadEvents()">Buscar</button>
+  </div>
+  <div id="events-content-wrapper">
+    <div id="event-gallery-wrapper">
+      <div id="event-gallery-container"></div>
+    </div>
+    <div id="event-detail-view">
+      <div id="event-detail-image-container"></div>
+      <div id="event-detail-json"></div>
+    </div>
+  </div>
+</div>

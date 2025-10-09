@@ -1,0 +1,68 @@
+<div id="cameras-view">
+  <div id="grid-container">
+    {% for cam in cameras %}
+    <div class="video-wrapper" data-camera-name="{{ cam.name }}">
+      <img src="{{ url_for('video_feed', camera_name=cam.name) }}" alt="{{ cam.name }}" onclick="showSingleView('{{ url_for('video_feed', camera_name=cam.name) }}', '{{ cam.name }}')">
+      <div class="camera-name">
+        <span class="camera-id">#{{ cam.id }}</span>{{ cam.name }}
+      </div>
+      <div class="motion-icon" id="motion-icon-{{ cam.name }}" title="Detección de Movimiento">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M14.12,10H12.88L11.5,14.25L9.25,7.5L6,13H4V11H5.5L8.03,8.47L10.5,15.5L12.5,11.5H14.5V13H16V10H14.12M12,4A4,4 0 0,1 16,8A4,4 0 0,1 12,12A4,4 0 0,1 8,8A4,4 0 0,1 12,4M12,2A6,6 0 0,0 6,8C6,11.31 8.69,14 12,14A6,6 0 0,0 18,8C18,4.69 15.31,2 12,2Z"/></svg>
+      </div>
+      <div class="camera-controls">
+        <div class="control-wrapper">
+          <span class="control-label">Sens</span>
+          <div class="sensitivity-control" title="Ajustar Sensibilidad de Movimiento">
+            <input type="range" min="100" max="10000" step="100" value="{{ cam.motion_sensitivity }}" onchange="updateSensitivity(this, '{{ cam.name }}')">
+          </div>
+        </div>
+        <div class="control-wrapper">
+          <span class="control-label">Ver Mov.</span>
+          <label class="switch" title="Mostrar/Ocultar Contornos de Movimiento">
+            <input type="checkbox" onchange="toggleMotion(this, '{{ cam.name }}')" {{ 'checked' if cam.get('show_motion_contours', False) }}>
+            <span class="slider"></span>
+          </label>
+        </div>
+        <div class="control-wrapper">
+          <span class="control-label">Cajas</span>
+          <label class="switch" title="Mostrar/Ocultar Cajas de Detección (Boxes)">
+            <input type="checkbox" onchange="toggleBbox(this, '{{ cam.name }}')" {{ 'checked' if cam.get('show_bbox', True) }}>
+            <span class="slider"></span>
+          </label>
+        </div>
+        <button class="control-btn" onclick="openClassSelector('{{ cam.name }}')">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M15.5,12C18,12 20,14 20,16.5C20,17.38 19.75,18.21 19.31,18.9L22.39,22L21,23.39L17.88,20.32C17.19,20.75 16.37,21 15.5,21C13,21 11,19 11,16.5C11,14 13,12 15.5,12M15.5,14A2.5,2.5 0 0,0 13,16.5A2.5,2.5 0 0,0 15.5,19A2.5,2.5 0 0,0 18,16.5A2.5,2.5 0 0,0 15.5,14M9,4L6.5,7H3V19H10.21C10.07,18.5 10,18 10,17.5C10,17.14 10.04,16.78 10.11,16.43L8,14V9H10.5L13,6H18V10.35C18.65,10.85 19.23,11.45 19.68,12.13L21,10.81V7A2,2 0 0,0 19,5H14L11.5,2H6A2,2 0 0,0 4,4V19A2,2 0 0,0 6,21H11.33C10.5,20.22 10,19.19 10,18C10,17.83 10,17.67 10.03,17.5H9V9H7.5L9,6.5V4Z" /></svg>
+        </button>
+        <div class="control-wrapper">
+          <span class="control-label">On</span>
+          <label class="switch" title="Encender/Apagar Cámara">
+            <input type="checkbox" onchange="toggleCamera(this, '{{ cam.name }}')" {{ 'checked' if cam.enabled }}>
+            <span class="slider"></span>
+          </label>
+        </div>
+      </div>
+      <div class="detected-classes-icons" id="icons-{{ cam.name }}">
+         <!-- Los iconos de clases se insertarán aquí con JS -->
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+
+  <div id="single-view">
+    <button class="back-button" onclick="showGridView()">← Volver</button>
+    <div id="single-view-container">
+      <img id="single-view-image" src="">
+    </div>
+  </div>
+</div>
+
+<div class="popup-overlay" id="class-selector-popup" style="display: none;">
+  <div class="popup-content">
+      <h3>Seleccionar clases a detectar</h3>
+      <div class="class-selection-grid" id="class-selection-grid"></div>
+      <div class="popup-buttons">
+          <button class="popup-cancel" onclick="closeClassSelector()">Cancelar</button>
+          <button class="popup-save" onclick="saveClassSelection()">Guardar</button>
+      </div>
+  </div>
+</div>
