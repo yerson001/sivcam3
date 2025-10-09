@@ -1,0 +1,17 @@
+# Framework web para la interfaz y la API
+Flask
+
+# Procesamiento de imágenes y video
+opencv-python
+
+# Modelo de detección de objetos
+ultralytics
+
+# Computación científica y manipulación de arrays (usado por OpenCV y Scikit-learn)
+numpy
+
+# Algoritmos de Machine Learning (específicamente KMeans para el color dominante)
+scikit-learn
+
+# Para leer y escribir archivos de configuración YAML
+PyYAML
