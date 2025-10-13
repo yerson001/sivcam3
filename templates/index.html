@@ -18,6 +18,7 @@
     {% include 'views/cameras.html' %} {# Carga la vista de las cámaras #}
     {% include 'views/config.html' %}  {# Carga la vista de configuración #}
     {% include 'views/events.html' %}  {# Carga la vista de eventos #}
+    {% include 'views/sync.html' %}    {# Carga la vista de sincronización #}
   </main>
 
   {# Este script pasa los datos dinámicos de Flask al JavaScript del frontend #}
@@ -39,6 +40,14 @@
         }
         {{ "," if not loop.last }}
       {% endfor %}
+    };
+
+    const syncConfig = {
+      enabled: {{ sync_config.get('enabled', False) | tojson }},
+      endpoint: {{ sync_config.get('endpoint', '') | tojson }},
+      auth_token: {{ sync_config.get('auth_token', '') | tojson }},
+      interval_seconds: {{ sync_config.get('interval_seconds', 60) | tojson }},
+      cameras: {{ sync_config.get('cameras', []) | tojson }}
     };
   </script>
   <script src="{{ url_for('assets.static', filename='js/main.js') }}"></script>

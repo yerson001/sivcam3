@@ -10,7 +10,7 @@ const singleViewContainer = document.getElementById('single-view-container');
 
 // Se declaran aquí, pero se asignan cuando el DOM está listo
 let classSelectorPopup, classSelectionGrid;
-let eventsView; // Se asignará en DOMContentLoaded
+let eventsView, syncView; // Se asignarán en DOMContentLoaded
 let allEventsData = [];
 let currentEditingCamera = null;
 
@@ -27,6 +27,7 @@ function showView(view) {
   const configView = document.getElementById('config-view'); // Se obtiene aquí porque está en un include
   configView.style.display = 'none';
   eventsView.style.display = 'none';
+  syncView.style.display = 'none';
   
   // Quitar la clase 'active' de todos los ítems de navegación
   document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
@@ -46,6 +47,10 @@ function showView(view) {
     loadEventCameras();
     document.getElementById('event-gallery-container').innerHTML = '';
     document.getElementById('event-detail-view').classList.remove('visible');
+  }
+  else if (view === 'sync') {
+    syncView.style.display = 'flex';
+    document.getElementById('nav-sync').classList.add('active');
   }
 }
 
@@ -154,6 +159,51 @@ function showEventDetail(index) {
 
   jsonContainer.innerHTML = jsonHtml;
   detailView.classList.add('visible');
+}
+
+// =========================================================================
+// === LÓGICA DE LA VISTA DE SINCRONIZACIÓN ================================
+// =========================================================================
+
+function populateSyncForm() {
+  document.getElementById('sync-enabled').checked = syncConfig.enabled;
+  document.getElementById('sync-endpoint').value = syncConfig.endpoint;
+  document.getElementById('sync-token').value = syncConfig.auth_token;
+  document.getElementById('sync-interval').value = syncConfig.interval_seconds;
+
+  const cameraList = document.getElementById('sync-camera-list');
+  cameraList.innerHTML = '';
+  for (const camName in cameraConfigs) {
+    const isChecked = syncConfig.cameras.includes(camName) || syncConfig.cameras.includes('all');
+    cameraList.innerHTML += `
+      <label>
+        <input type="checkbox" value="${camName}" ${isChecked ? 'checked' : ''}>
+        ${camName}
+      </label>
+    `;
+  }
+}
+
+async function saveSyncConfig() {
+  const selectedCameras = Array.from(document.querySelectorAll('#sync-camera-list input:checked')).map(cb => cb.value);
+
+  const newConfig = {
+    enabled: document.getElementById('sync-enabled').checked,
+    endpoint: document.getElementById('sync-endpoint').value,
+    auth_token: document.getElementById('sync-token').value,
+    interval_seconds: parseInt(document.getElementById('sync-interval').value, 10),
+    cameras: selectedCameras.length === Object.keys(cameraConfigs).length ? ['all'] : selectedCameras
+  };
+
+  const res = await fetch('/api/sync_config', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(newConfig)
+  });
+  const result = await res.json();
+  alert(result.message);
+  // Actualizar la config global de JS
+  Object.assign(syncConfig, newConfig);
 }
 
 // =========================================================================
@@ -289,6 +339,7 @@ async function pollStatus() {
 // Inicializar estado al cargar la página
 document.addEventListener('DOMContentLoaded', function() { // Asegurarse de que todo el DOM esté cargado
     eventsView = document.getElementById('events-view');
+    syncView = document.getElementById('sync-view');
     classSelectorPopup = document.getElementById('class-selector-popup');
     classSelectionGrid = document.getElementById('class-selection-grid');
 
@@ -298,6 +349,9 @@ document.addEventListener('DOMContentLoaded', function() { // Asegurarse de que 
         wrapper.style.opacity = wrapper.querySelector('input[type="checkbox"]').checked ? 1 : 0.5;
         updateClassIcons(cameraName);
     });
+
+    // Poblar el formulario de sincronización
+    populateSyncForm();
     // Empezar a consultar el estado de las detecciones cada segundo
     setInterval(pollStatus, 1000);
 

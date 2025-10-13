@@ -1,0 +1,42 @@
+<div id="sync-view" class="view-container">
+  <div class="form-container">
+    <h2>Configuración de Sincronización</h2>
+    <p>
+      Envía periódicamente una captura de las cámaras seleccionadas a un endpoint externo (por ejemplo, un backend en NestJS).
+    </p>
+
+    <div class="form-group">
+      <label class="switch-label">
+        <span>Activar Sincronización</span>
+        <label class="switch">
+          <input type="checkbox" id="sync-enabled">
+          <span class="slider"></span>
+        </label>
+      </label>
+    </div>
+
+    <div class="form-group">
+      <label for="sync-endpoint">URL del Endpoint</label>
+      <input type="url" id="sync-endpoint" placeholder="https://tu-backend.com/api/frames">
+    </div>
+
+    <div class="form-group">
+      <label for="sync-token">Token de Autenticación (Opcional)</label>
+      <input type="password" id="sync-token" placeholder="Ej: Bearer eyJhbGciOiJIUzI1NiIsInR...">
+    </div>
+
+    <div class="form-group">
+      <label for="sync-interval">Intervalo de envío (segundos)</label>
+      <input type="number" id="sync-interval" min="5" value="60">
+    </div>
+
+    <div class="form-group">
+      <label>Cámaras a Sincronizar</label>
+      <div id="sync-camera-list" class="checkbox-list">
+        <!-- Se llenará dinámicamente con JS -->
+      </div>
+    </div>
+
+    <button class="save-button" onclick="saveSyncConfig()">Guardar Configuración</button>
+  </div>
+</div>

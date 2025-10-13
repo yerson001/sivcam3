@@ -9,6 +9,7 @@ from ultralytics import YOLO
 from datetime import datetime
 import numpy as np
 from sklearn.cluster import KMeans
+import requests # Necesario para enviar datos al backend externo
 
 app = Flask(__name__)
 
@@ -237,6 +238,70 @@ class CameraThread(threading.Thread):
 
             self.config[key] = value
 
+# --- Clase para gestionar la Sincronización con un Backend Externo ---
+class SyncThread(threading.Thread):
+    def __init__(self):
+        super().__init__()
+        self.daemon = True
+        self.is_running = True
+        self.sync_config = {}
+        self.lock = threading.Lock()
+        print("Inicializando hilo de Sincronización.")
+
+    def run(self):
+        while self.is_running:
+            with self.lock:
+                is_enabled = self.sync_config.get('enabled', False)
+                interval = self.sync_config.get('interval_seconds', 60)
+
+            if not is_enabled:
+                time.sleep(5) # Si está desactivado, revisa cada 5s por si se activa
+                continue
+
+            start_time = time.time()
+            self.send_frames()
+            
+            # Esperar el resto del intervalo
+            elapsed_time = time.time() - start_time
+            sleep_time = max(0, interval - elapsed_time)
+            time.sleep(sleep_time)
+
+    def send_frames(self):
+        with self.lock:
+            endpoint = self.sync_config.get('endpoint')
+            cameras_to_sync = self.sync_config.get('cameras', [])
+            auth_token = self.sync_config.get('auth_token') # Obtenemos el token
+
+        if not endpoint:
+            print("Sync Warning: No se ha configurado un endpoint.")
+            return
+
+        for cam_name, cam_thread in camera_threads.items():
+            # Sincronizar si la cámara está en la lista o si la lista es ["all"]
+            if "all" not in cameras_to_sync and cam_name not in cameras_to_sync:
+                continue
+            
+            frame_bytes = cam_thread.get_frame()
+            if frame_bytes:
+                files = {'image': ('frame.jpg', frame_bytes, 'image/jpeg')}
+                payload = {'cameraId': cam_thread.id, 'cameraName': cam_thread.name, 'timestamp': datetime.now().isoformat()}
+                headers = {}
+                if auth_token:
+                    # Añadimos la cabecera de autorización si el token existe
+                    headers['Authorization'] = auth_token
+
+                try:
+                    response = requests.post(endpoint, files=files, data=payload, headers=headers, timeout=10)
+                    print(f"Sync: Frame de '{cam_name}' enviado. Status: {response.status_code}")
+                except requests.exceptions.RequestException as e:
+                    print(f"Sync Error: No se pudo enviar el frame de '{cam_name}' a {endpoint}. Error: {e}")
+
+    def update_config(self, new_config):
+        with self.lock:
+            self.sync_config = new_config
+
+    def stop(self):
+        self.is_running = False
 
 camera_threads = {}
 
@@ -256,6 +321,10 @@ def load_config():
                 thread.start()
                 camera_threads[cam_config['name']] = thread
             print("Configuración cargada. Cámaras activas:", list(camera_threads.keys()))
+            
+            # Cargar configuración de sincronización y pasarla al hilo
+            sync_config = config.get('sync', {})
+            sync_thread.update_config(sync_config)
     except Exception as e:
         print(f"Error al cargar config.yml: {e}")
         camera_threads = {}
@@ -279,7 +348,9 @@ def generate_frames(camera_name):
 def index():
     # Pasa la configuración completa de las cámaras a la plantilla
     camera_configs = [t.config for t in camera_threads.values()]
-    return render_template('index.html', cameras=camera_configs)
+    # Pasa también la configuración de sincronización
+    sync_config = sync_thread.sync_config if 'sync_thread' in globals() else {}
+    return render_template('index.html', cameras=camera_configs, sync_config=sync_config)
 
 @app.route('/api/status')
 def api_status():
@@ -366,6 +437,29 @@ def handle_config():
         # El usuario debe refrescar la página para aplicar cambios mayores.
         return jsonify({"status": "success", "message": "Configuración guardada. Refresca la página para ver los cambios."})
 
+@app.route('/api/sync_config', methods=['GET', 'POST'])
+def handle_sync_config():
+    if request.method == 'GET':
+        return jsonify(sync_thread.sync_config)
+    
+    if request.method == 'POST':
+        new_sync_config = request.json
+        sync_thread.update_config(new_sync_config)
+
+        # Guardar la configuración de sincronización en el archivo config.yml
+        try:
+            with open(CONFIG_PATH, 'r') as f:
+                full_config = yaml.safe_load(f) or {}
+            
+            full_config['sync'] = new_sync_config
+
+            with open(CONFIG_PATH, 'w') as f:
+                yaml.dump(full_config, f, default_flow_style=False, sort_keys=False)
+            
+            return jsonify({"status": "success", "message": "Configuración de sincronización guardada."})
+        except Exception as e:
+            return jsonify({"status": "error", "message": f"Error al guardar en config.yml: {e}"}), 500
+
 @app.route('/api/event_cameras')
 def get_event_cameras():
     try:
@@ -402,6 +496,10 @@ def get_events():
     return jsonify(events)
 
 if __name__ == '__main__':
+    # Iniciar el hilo de sincronización ANTES de cargar la configuración
+    sync_thread = SyncThread()
+    sync_thread.start()
+
     load_config() # Carga inicial de la configuración
     # debug=False es importante cuando se usan hilos para evitar que Flask inicie la app dos veces
     app.run(debug=False, host='0.0.0.0', port=5000, threaded=True)
