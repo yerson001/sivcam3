@@ -1,4 +1,4 @@
-from flask import Flask,Response, render_template, request, jsonify
+from flask import Flask,Response, render_template, request, jsonify, Blueprint
 import cv2
 import yaml
 import time
@@ -11,6 +11,11 @@ import numpy as np
 from sklearn.cluster import KMeans
 
 app = Flask(__name__)
+
+# --- Blueprint para la carpeta 'assets' ---
+# Esto nos permite tener una carpeta de estáticos (assets) separada para CSS/JS.
+assets_bp = Blueprint('assets', __name__, static_folder='assets', static_url_path='/assets')
+app.register_blueprint(assets_bp)
 
 # --- Carga del modelo YOLO ---
 model = YOLO("yolov8n.pt")
@@ -292,59 +297,56 @@ def video_feed(camera_name):
     return Response(generate_frames(camera_name),
                     mimetype='multipart/x-mixed-replace; boundary=frame')
 
+from functools import wraps
+
+def get_camera_thread(f):
+    """Decorador para obtener el hilo de la cámara y manejar errores."""
+    @wraps(f)
+    def decorated_function(camera_name, *args, **kwargs):
+        thread = camera_threads.get(camera_name)
+        if not thread:
+            return jsonify({"status": "error", "message": "Cámara no encontrada"}), 404
+        return f(thread, *args, **kwargs)
+    return decorated_function
+
 @app.route('/api/camera/<camera_name>/toggle', methods=['POST'])
-def toggle_camera(camera_name):
-    thread = camera_threads.get(camera_name)
-    if not thread:
-        return jsonify({"status": "error", "message": "Cámara no encontrada"}), 404
-    
+@get_camera_thread
+def toggle_camera(thread):
     is_enabled = request.json.get('enabled')
     thread.update_config('enabled', is_enabled)
-    return jsonify({"status": "success", "message": f"Cámara {camera_name} {'activada' if is_enabled else 'desactivada'}"})
+    return jsonify({"status": "success", "message": f"Cámara {thread.name} {'activada' if is_enabled else 'desactivada'}"})
 
 @app.route('/api/camera/<camera_name>/toggle_bbox', methods=['POST'])
-def toggle_bbox(camera_name):
-    thread = camera_threads.get(camera_name)
-    if not thread:
-        return jsonify({"status": "error", "message": "Cámara no encontrada"}), 404
-    
+@get_camera_thread
+def toggle_bbox(thread):
     show = request.json.get('show')
     thread.update_config('show_bbox', show)
-    return jsonify({"status": "success", "message": f"Bounding boxes {'visibles' if show else 'ocultos'} para {camera_name}"})
+    return jsonify({"status": "success", "message": f"Bounding boxes {'visibles' if show else 'ocultos'} para {thread.name}"})
 
 @app.route('/api/camera/<camera_name>/toggle_motion', methods=['POST'])
-def toggle_motion(camera_name):
-    thread = camera_threads.get(camera_name)
-    if not thread:
-        return jsonify({"status": "error", "message": "Cámara no encontrada"}), 404
-    
+@get_camera_thread
+def toggle_motion(thread):
     show = request.json.get('show')
     thread.update_config('show_motion', show)
-    return jsonify({"status": "success", "message": f"Visualización de movimiento {'activada' if show else 'desactivada'} para {camera_name}"})
+    return jsonify({"status": "success", "message": f"Visualización de movimiento {'activada' if show else 'desactivada'} para {thread.name}"})
 
 @app.route('/api/camera/<camera_name>/classes', methods=['POST'])
-def update_classes(camera_name):
-    thread = camera_threads.get(camera_name)
-    if not thread:
-        return jsonify({"status": "error", "message": "Cámara no encontrada"}), 404
-
+@get_camera_thread
+def update_classes(thread):
     classes = request.json.get('classes', [])
     # Convertir a enteros
     classes = [int(c) for c in classes]
     thread.update_config('detect_classes', classes)
-    return jsonify({"status": "success", "message": f"Clases de detección actualizadas para {camera_name}"})
+    return jsonify({"status": "success", "message": f"Clases de detección actualizadas para {thread.name}"})
 
 @app.route('/api/camera/<camera_name>/motion_sensitivity', methods=['POST'])
-def update_motion_sensitivity(camera_name):
-    thread = camera_threads.get(camera_name)
-    if not thread:
-        return jsonify({"status": "error", "message": "Cámara no encontrada"}), 404
-
+@get_camera_thread
+def update_motion_sensitivity(thread):
     sensitivity = request.json.get('sensitivity')
     if sensitivity is None:
         return jsonify({"status": "error", "message": "Sensibilidad no proporcionada"}), 400
     thread.update_config('motion_sensitivity', sensitivity)
-    return jsonify({"status": "success", "message": f"Sensibilidad de movimiento actualizada para {camera_name}"})
+    return jsonify({"status": "success", "message": f"Sensibilidad de movimiento actualizada para {thread.name}"})
 
 @app.route('/api/config', methods=['GET', 'POST'])
 def handle_config():
