@@ -15,3 +15,6 @@ scikit-learn
 
 # Para leer y escribir archivos de configuración YAML
 PyYAML
+
+# Para comparar la similitud entre imágenes (SSIM)
+scikit-image
