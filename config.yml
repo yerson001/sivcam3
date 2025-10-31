@@ -1,37 +1,43 @@
 cameras:
-  - id: 1
-    name: "camara_local"
-    # Para cámaras USB/integradas, usa el índice (0, 1, 2...)
-    source: 0
-    type: "local"
-    enabled: true
-    show_bbox: true # Mostrar bounding boxes por defecto
-    # Clases de COCO: 0:person, 1:bicycle, 2:car, 3:motorcycle, 5:bus, 7:truck, 24:backpack, 26:handbag, 28:suitcase
-    detect_classes: [0, 2] # Detectar personas y coches por defecto
-    motion_detection_enabled: true
-    show_motion_contours: false # No dibujar contornos de movimiento por defecto
-    motion_sensitivity: 1000 # Área mínima en píxeles para detectar movimiento
-
-  - id: 2
-    name: "stream_croacia"
-    # Para streams de internet (HLS, RTSP, etc.)
-    source: "https://cdn-004.whatsupcams.com/hls/hr_pula01.m3u8"
-    type: "stream"
-    enabled: true
-    show_bbox: false # Ocultar bounding boxes por defecto
-    detect_classes: [0, 1, 2, 3, 5, 7]
-    motion_detection_enabled: true
-    show_motion_contours: true # Dibujar contornos de movimiento por defecto
-    motion_sensitivity: 2000
-
-  - id: 3
-    name: "stream_croacia2"
-    # Para streams de internet (HLS, RTSP, etc.)
-    source: "https://cdn-004.whatsupcams.com/hls/hr_pula01.m3u8"
-    type: "stream"
-    enabled: false # Esta cámara empieza desactivada
-    show_bbox: true
-    detect_classes: [] # No detectar nada por defecto
-    motion_detection_enabled: false
-    show_motion_contours: false
-    motion_sensitivity: 1000
+- id: 1
+  name: puerta
+  source: '1'
+  type: local
+  enabled: true
+  show_bbox: true
+  detect_classes:
+  - 0
+  - 2
+  motion_detection_enabled: true
+  show_motion_contours: false
+  motion_sensitivity: 1000
+- id: 2
+  name: lobby
+  source: C:/Users/usuario/Videos/Screen Recordings/lobby.mp4
+  type: file
+  enabled: true
+  show_bbox: true
+  detect_classes:
+  - 0
+  - 2
+  motion_detection_enabled: true
+  show_motion_contours: false
+  motion_sensitivity: 1000
+- id: 3
+  name: garita
+  source: C:/Users/usuario/Videos/Screen Recordings/capilla.mp4
+  type: file
+  enabled: true
+  show_bbox: true
+  detect_classes:
+  - 0
+  - 2
+  motion_detection_enabled: true
+  show_motion_contours: false
+  motion_sensitivity: 1000
+sync:
+  enabled: true
+  endpoint: http://34.144.231.224/api/video-data/analyze-frame
+  auth_token: ''
+  cameras:
+  - puerta
