@@ -167,8 +167,17 @@ function showEventDetail(index) {
 
 function populateSyncForm() {
   document.getElementById('sync-enabled').checked = syncConfig.enabled;
-  document.getElementById('sync-endpoint').value = syncConfig.endpoint;
-  document.getElementById('sync-token').value = syncConfig.auth_token;
+  document.getElementById('sync-endpoint').value = syncConfig.endpoint || '';
+  document.getElementById('sync-token').value = syncConfig.auth_token || '';
+  document.getElementById('sync-mode').value = syncConfig.sync_mode || 'event';
+  document.getElementById('sync-interval').value = syncConfig.interval_seconds || 30;
+
+  // Mostrar u ocultar el campo de intervalo según el modo
+  const mode = document.getElementById('sync-mode').value;
+  document.getElementById('sync-interval-group').style.display = (mode === 'periodic' || mode === 'both') ? 'block' : 'none';
+  document.getElementById('sync-mode').addEventListener('change', (e) => {
+    document.getElementById('sync-interval-group').style.display = (e.target.value === 'periodic' || e.target.value === 'both') ? 'block' : 'none';
+  });
 
   const cameraList = document.getElementById('sync-camera-list');
   cameraList.innerHTML = '';
@@ -190,6 +199,8 @@ async function saveSyncConfig() {
     enabled: document.getElementById('sync-enabled').checked,
     endpoint: document.getElementById('sync-endpoint').value,
     auth_token: document.getElementById('sync-token').value,
+    sync_mode: document.getElementById('sync-mode').value,
+    interval_seconds: parseInt(document.getElementById('sync-interval').value, 10),
     cameras: selectedCameras.length === Object.keys(cameraConfigs).length ? ['all'] : selectedCameras
   };
 

@@ -1,9 +1,8 @@
 <div id="sync-view" class="view-container">
   <div class="form-container">
     <h2>Configuración de Sincronización</h2>
-    <p>
-      Envía periódicamente una captura de las cámaras seleccionadas a un endpoint externo (por ejemplo, un backend en NestJS).
-    </p>
+    <p>Configura el envío de imágenes a un servidor externo. Puedes enviar imágenes solo cuando ocurre un evento,
+      periódicamente a un intervalo fijo, o ambos.</p>
 
     <div class="form-group">
       <label class="switch-label">
@@ -26,8 +25,18 @@
     </div>
 
     <div class="form-group">
-      <label for="sync-interval">Intervalo de envío (segundos)</label>
-      <input type="number" id="sync-interval" min="5" value="60">
+      <label for="sync-mode">Modo de Sincronización</label>
+      <select id="sync-mode">
+        <option value="event">Solo en Eventos</option>
+        <option value="periodic">Periódico</option>
+        <option value="both">Ambos (Eventos y Periódico)</option>
+      </select>
+    </div>
+
+    <div class="form-group" id="sync-interval-group">
+      <label for="sync-interval">Intervalo Periódico (segundos)</label>
+      <input type="number" id="sync-interval" min="5" value="30">
+      <small>Aplica para los modos 'Periódico' y 'Ambos'.</small>
     </div>
 
     <div class="form-group">

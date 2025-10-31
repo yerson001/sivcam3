@@ -1,22 +1,27 @@
 import threading
 import time
 import requests
+from datetime import datetime
 import queue
 
 class SyncThread(threading.Thread):
-    def __init__(self, event_sync_queue):
+    def __init__(self, event_sync_queue, get_camera_threads_callback):
         super().__init__()
         self.daemon = True
         self.is_running = True
         self.sync_config = {
             'enabled': True,        # Sincronización activa o no
-            'test_mode': False,       # Modo prueba (no envía realmente)
+            'sync_mode': 'event',     # 'event', 'periodic', o 'both'
+            'interval_seconds': 30,   # Intervalo para el modo periódico
+            'test_mode': True,       # Modo prueba (no envía realmente)
             'endpoint': "http://34.144.231.224/api/video-data/analyze-frame",        # URL del servidor
             'cameras': ['all'],      # Lista de cámaras a sincronizar
             'auth_token': None       # Token de autenticación opcional
         }
         self.lock = threading.Lock()
         self.event_sync_queue = event_sync_queue
+        self.get_camera_threads = get_camera_threads_callback
+        self.last_periodic_send_time = 0
         print("Inicializando hilo de Sincronización.")
 
     def run(self):
@@ -24,12 +29,50 @@ class SyncThread(threading.Thread):
         while self.is_running:
             try:
                 event_data = self.event_sync_queue.get(timeout=1)
-                self.send_event(event_data)
-                self.event_sync_queue.task_done()
+                
+                with self.lock:
+                    mode = self.sync_config.get('sync_mode', 'event')
+                
+                if mode in ['event', 'both']:
+                    self.send_event(event_data)
+                    self.event_sync_queue.task_done()
+
             except queue.Empty:
-                continue
+                # La cola está vacía, no hacemos nada con eventos.
+                # Pasamos a la lógica periódica.
+                pass
             except Exception as e:
                 print(f"Sync Error en el bucle principal: {e}")
+
+            # --- Lógica de envío periódico ---
+            with self.lock:
+                mode = self.sync_config.get('sync_mode', 'event')
+                interval = self.sync_config.get('interval_seconds', 30)
+            
+            if mode in ['periodic', 'both']:
+                current_time = time.time()
+                if (current_time - self.last_periodic_send_time) > interval:
+                    print(f"Sync: Disparando envío periódico (cada {interval}s).")
+                    self.send_periodic_frames()
+                    self.last_periodic_send_time = current_time
+
+    def send_periodic_frames(self):
+        """Obtiene el frame actual de las cámaras y lo envía."""
+        camera_threads = self.get_camera_threads()
+        if not camera_threads:
+            return
+
+        for cam_name, cam_thread in camera_threads.items():
+            frame_bytes = cam_thread.get_frame()
+            if frame_bytes:
+                # Construimos un payload similar al de un evento
+                payload = {
+                    "camera_name": cam_thread.name,
+                    "camera_id": cam_thread.id,
+                    "frame_bytes": frame_bytes
+                }
+                # Usamos un hilo para no bloquear el bucle si un envío tarda
+                threading.Thread(target=self.send_event, args=(payload,)).start()
 
     def send_event(self, event_data):
         with self.lock:
@@ -89,6 +132,8 @@ class SyncThread(threading.Thread):
             new_enabled = new_config.get('enabled', False)
             old_test_mode = self.sync_config.get('test_mode', True)
             new_test_mode = new_config.get('test_mode', True)
+            old_mode = self.sync_config.get('sync_mode', 'event')
+            new_mode = new_config.get('sync_mode', 'event')
 
             if new_enabled != old_enabled:
                 if new_enabled:
@@ -101,6 +146,9 @@ class SyncThread(threading.Thread):
                     print("\n🧪 MODO PRUEBA ACTIVADO.\n")
                 else:
                     print("\n🚀 MODO REAL ACTIVADO.\n")
+
+            if new_mode != old_mode:
+                print(f"\n🔄 MODO DE SINCRONIZACIÓN CAMBIADO A: '{new_mode.upper()}'\n")
 
             self.sync_config.update(new_config)
 

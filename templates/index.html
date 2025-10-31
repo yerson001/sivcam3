@@ -46,7 +46,9 @@
       enabled: {{ sync_config.get('enabled', False) | tojson }},
       endpoint: {{ sync_config.get('endpoint', '') | tojson }},
       auth_token: {{ sync_config.get('auth_token', '') | tojson }},
-      cameras: {{ sync_config.get('cameras', []) | tojson }}
+      cameras: {{ sync_config.get('cameras', []) | tojson }},
+      sync_mode: {{ sync_config.get('sync_mode', 'event') | tojson }},
+      interval_seconds: {{ sync_config.get('interval_seconds', 30) | tojson }}
     };
   </script>
   <script src="{{ url_for('assets.static', filename='js/main.js') }}"></script>

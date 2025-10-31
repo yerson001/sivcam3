@@ -28,7 +28,8 @@ class VideoAnalysisApp:
         
         self.camera_threads = {}
         self.event_sync_queue = queue.Queue()
-        self.sync_thread = SyncThread(self.event_sync_queue) # Inyectar la cola
+        # Inyectar la cola y una función para obtener los hilos de cámara
+        self.sync_thread = SyncThread(self.event_sync_queue, lambda: self.camera_threads)
         
         self.register_blueprints()
         self.register_routes()
